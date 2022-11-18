@@ -130,9 +130,24 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
 
     private fun setCurrentTimeToZero() { }
 
-    private fun closeStoryDetailView() {
+    private fun closeStoryDetailView(storyGroup: StoryGroup? = null, position: Int? = null) {
+        storyGroup?.let {
+            position?.let {
+                val nextIndex = storyGroup.lastStoryIndex + 1
+                if (nextIndex < storyGroup.storyList.size) {
+                    storyGroup.lastStoryIndex = nextIndex
+                } else {
+                    if (nextIndex == storyGroup.storyList.size) {
+                        storyGroup.isAllStoriesWatched = true
+                        storyGroup.lastStoryIndex = 0
+                    }
+                }
+            }
+        }
+
         binding.vpStoryDetail.adapter = null
         binding.vpStoryDetail.visibility = View.GONE
+        binding.rvStory.adapter?.notifyDataSetChanged()
     }
 
     override fun onPauseVideo(storyGroup: StoryGroup?, position: Int?) {
@@ -153,8 +168,8 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         }
     }
 
-    override fun onCloseStory() {
-        closeStoryDetailView()
+    override fun onCloseStory(storyGroup: StoryGroup?, position: Int?) {
+        closeStoryDetailView(storyGroup, position)
     }
 
     override fun onDestroyView() {

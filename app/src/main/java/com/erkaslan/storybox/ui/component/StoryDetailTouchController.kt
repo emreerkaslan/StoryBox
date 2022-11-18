@@ -47,7 +47,7 @@ class StoryDetailTouchController(context: Context, attrs: AttributeSet) : Constr
                     }
 
                 if (moveDirection == Direction.DOWN) {
-                    listener?.onCloseStory()
+                    listener?.onCloseStory(storyGroup, position)
                     return true
                 }
 

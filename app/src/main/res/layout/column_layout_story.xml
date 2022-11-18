@@ -10,20 +10,30 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="80dp"
+        android:layout_width="@dimen/size_400"
         android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/iv_user_background"
+            android:layout_width="@dimen/story_image_background_size"
+            android:layout_height="@dimen/story_image_background_size"
+            android:layout_marginHorizontal="@dimen/margin_50"
+            android:layout_marginTop="@dimen/margin_50"
+            android:src="@{story.allStoriesWatched ? @drawable/bg_story_old : @drawable/bg_story_new}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <ImageView
             android:id="@+id/iv_user"
             android:layout_width="@dimen/story_image_size"
             android:layout_height="@dimen/story_image_size"
-            android:layout_marginHorizontal="@dimen/margin_50"
-            android:layout_marginTop="@dimen/margin_50"
             android:scaleType="center"
             app:circularImageUrl="@{story.userAvatarUri}"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/iv_user_background"
+            app:layout_constraintStart_toStartOf="@id/iv_user_background"
+            app:layout_constraintTop_toTopOf="@id/iv_user_background"
+            app:layout_constraintBottom_toBottomOf="@id/iv_user_background"
             app:placeHolder="@{story.userAvatarUri}" />
 
         <TextView

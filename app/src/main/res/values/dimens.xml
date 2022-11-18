@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="homepage_header_height">50dp</dimen>
-    <dimen name="story_image_size">60dp</dimen>
+    <dimen name="story_image_size">50dp</dimen>
+    <dimen name="story_image_background_size">60dp</dimen>
 
     <!-- Margin -->
     <dimen name="margin_25">5dp</dimen>
@@ -12,6 +13,8 @@
     <dimen name="font_size_120">12sp</dimen>
 
     <!-- Size -->
+    <dimen name="size_75">15dp</dimen>
     <dimen name="size_100">20dp</dimen>
     <dimen name="size_150">30dp</dimen>
+    <dimen name="size_400">80dp</dimen>
 </resources>

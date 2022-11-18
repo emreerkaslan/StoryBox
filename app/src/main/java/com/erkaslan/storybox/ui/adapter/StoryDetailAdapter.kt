@@ -102,5 +102,5 @@ interface StoryDetailListener {
     fun onStoryPreviousClicked(storyGroup: StoryGroup?, position: Int?)
     fun onPauseVideo(storyGroup: StoryGroup?, position: Int?)
     fun onResumeVideo(storyGroup: StoryGroup?, position: Int?)
-    fun onCloseStory()
+    fun onCloseStory(storyGroup: StoryGroup?, position: Int?)
 }
