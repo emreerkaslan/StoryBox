@@ -60,15 +60,19 @@ object SampleData {
             listOf(
                 Story(
                     type = StoryType.VIDEO,
-                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/5/5e/Snapping_fingers.ogv"
-                ),
-                Story(
-                    type = StoryType.VIDEO,
-                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/2/28/%22Optimum_TT%22_laser_cutting_machine_during_the_%22Armiya_2021%22_exhibition.ogg"
-                ),
-                Story(
-                    type = StoryType.VIDEO,
                     mediaUri = "https://upload.wikimedia.org/wikipedia/commons/2/28/TikTok_and_YouTube_Shorts_example.webm"
+                ),
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/5/5c/Snap%21_Partial_Lift-off.webm"
+                ),
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/8/87/Common_snapping_turtle_in_Iowa.webm"
+                ),
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/f/f2/MiB430wvjeKNqs.webm"
                 ),
             ),
             username = "world_of_interests",

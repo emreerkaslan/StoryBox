@@ -5,14 +5,18 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.erkaslan.storybox.data.models.StoryGroup
 import com.erkaslan.storybox.databinding.FragmentHomeBinding
 import com.erkaslan.storybox.ui.StoryAdapter
 import com.erkaslan.storybox.ui.StoryListener
+import com.erkaslan.storybox.ui.adapter.StoryDetailAdapter
+import com.erkaslan.storybox.ui.adapter.StoryDetailListener
+import com.erkaslan.storybox.ui.component.CubicalPageTransformer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), StoryListener {
+class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel by activityViewModels<HomeViewModel>()
@@ -38,9 +42,7 @@ class HomeFragment : Fragment(), StoryListener {
     private fun initObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.viewState.collect {
-                it.storyGroupList?.let {
-                    // Multiply data for test
-                    val list = it.toMutableList() + it.toMutableList()
+                it.storyGroupList?.let { list ->
                     (binding.rvStory.adapter as StoryAdapter).submitList(list)
                 }
             }
@@ -48,12 +50,57 @@ class HomeFragment : Fragment(), StoryListener {
     }
 
     override fun onStoryClicked(storyIndex: Int) {
-        setStoryViewPager()
+        setStoryViewPager(storyIndex)
     }
     
-    private fun setStoryViewPager() {
-        binding.vpStoryDetail.visibility = View.VISIBLE
+    private fun setStoryViewPager(storyIndex: Int) {
+        if (binding.vpStoryDetail.adapter == null) {
+            binding.vpStoryDetail.visibility = View.VISIBLE
+            binding.vpStoryDetail.adapter = StoryDetailAdapter().also {
+                it.setStoryDetailListener(this)
+                it.submitList(viewModel.viewState.value.storyGroupList?.toMutableList())
+            }
+            binding.vpStoryDetail.setPageTransformer(CubicalPageTransformer())
+            binding.vpStoryDetail.setCurrentItem(storyIndex, false)
+        } else {
+            binding.vpStoryDetail.setCurrentItem(storyIndex, false)
+        }
         binding.vpStoryDetail.requestLayout()
+    }
+
+    override fun onStoryNextClicked(storyGroup: StoryGroup, position: Int) {
+        val nextIndex = storyGroup.lastStoryIndex + 1
+        if (nextIndex < storyGroup.storyList.size) {
+            storyGroup.lastStoryIndex = nextIndex
+            (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+        } else {
+            if (nextIndex == storyGroup.storyList.size) {
+                storyGroup.isAllStoriesWatched = true
+                storyGroup.lastStoryIndex = 0
+            }
+            (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+            goToNextGroup(storyGroup)
+        }
+    }
+
+    private fun goToNextGroup(storyGroup: StoryGroup) {
+        val list = viewModel.viewState.value.storyGroupList?.toMutableList()
+        list?.let {
+            if (it.size > it.indexOf(storyGroup) + 1) {
+                binding.vpStoryDetail.setCurrentItem(it.indexOf(storyGroup) + 1, true)
+            } else {
+                closeStoryDetailView()
+            }
+        }
+    }
+
+    private fun closeStoryDetailView() {
+        binding.vpStoryDetail.adapter = null
+        binding.vpStoryDetail.visibility = View.GONE
+    }
+
+    override fun onStoryPreviousClicked(storyGroup: StoryGroup, position: Int) {
+        TODO("Not yet implemented")
     }
 
     override fun onDestroyView() {

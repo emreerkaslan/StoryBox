@@ -41,11 +41,11 @@
             app:layout_constraintTop_toBottomOf="@id/cv_story_box_header"
             tools:listitem="@layout/column_layout_story" />
 
-        <androidx.viewpager.widget.ViewPager
+        <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/vp_story_detail"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/black"
+            android:background="@color/black"
             android:elevation="@dimen/margin_50"
             android:orientation="horizontal"
             android:visibility="gone"

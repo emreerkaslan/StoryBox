@@ -9,4 +9,9 @@
 
     <!-- Font Size -->
     <dimen name="font_size_100">10sp</dimen>
+    <dimen name="font_size_120">12sp</dimen>
+
+    <!-- Size -->
+    <dimen name="size_100">20dp</dimen>
+    <dimen name="size_150">30dp</dimen>
 </resources>

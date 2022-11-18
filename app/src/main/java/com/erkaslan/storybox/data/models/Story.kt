@@ -10,10 +10,10 @@ data class StoryGroup(
     val storyList: List<Story> = listOf(),
     val username: String? = null,
     val userAvatarUri: String? = null,
-    val lastStoryIndex: Int = 0,
-    val isAllStoriesWatched: Boolean = false
+    var lastStoryIndex: Int = 0,
+    var isAllStoriesWatched: Boolean = false
 )
 
 enum class StoryType {
-    IMAGE, VIDEO
+    IMAGE, VIDEO,
 }
