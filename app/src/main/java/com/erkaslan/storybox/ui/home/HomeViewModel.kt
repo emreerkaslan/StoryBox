@@ -30,7 +30,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 }
 
 data class HomeViewState(
-        val storyGroupList: List<StoryGroup>? = null,
-        val currentGroup: StoryGroup? = null,
-        val currentTimeValueInMillis: Int? = 0,
+    val storyGroupList: List<StoryGroup>? = null,
+    val currentGroup: StoryGroup? = null,
+    val currentTimeValueInMillis: Int? = 5000,
 )

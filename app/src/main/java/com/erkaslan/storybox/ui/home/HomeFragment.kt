@@ -1,5 +1,6 @@
 package com.erkaslan.storybox.ui.home
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -68,18 +69,22 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         binding.vpStoryDetail.requestLayout()
     }
 
-    override fun onStoryNextClicked(storyGroup: StoryGroup, position: Int) {
-        val nextIndex = storyGroup.lastStoryIndex + 1
-        if (nextIndex < storyGroup.storyList.size) {
-            storyGroup.lastStoryIndex = nextIndex
-            (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
-        } else {
-            if (nextIndex == storyGroup.storyList.size) {
-                storyGroup.isAllStoriesWatched = true
-                storyGroup.lastStoryIndex = 0
+    override fun onStoryNextClicked(storyGroup: StoryGroup?, position: Int?) {
+        storyGroup?.let {
+            position?.let {
+                val nextIndex = storyGroup.lastStoryIndex + 1
+                if (nextIndex < storyGroup.storyList.size) {
+                    storyGroup.lastStoryIndex = nextIndex
+                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                } else {
+                    if (nextIndex == storyGroup.storyList.size) {
+                        storyGroup.isAllStoriesWatched = true
+                        storyGroup.lastStoryIndex = 0
+                    }
+                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                    goToNextGroup(storyGroup)
+                }
             }
-            (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
-            goToNextGroup(storyGroup)
         }
     }
 
@@ -94,13 +99,62 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         }
     }
 
+    override fun onStoryPreviousClicked(storyGroup: StoryGroup?, position: Int?) {
+        storyGroup?.let {
+            position?.let {
+                val previousIndex = storyGroup.lastStoryIndex - 1
+                if (previousIndex > -1) {
+                    storyGroup.lastStoryIndex = previousIndex
+                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                } else {
+                    if (previousIndex == -1) {
+                        storyGroup.lastStoryIndex = 0
+                    }
+                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                    goToPreviousGroup(storyGroup)
+                }
+            }
+        }
+    }
+
+    private fun goToPreviousGroup(storyGroup: StoryGroup) {
+        val list = viewModel.viewState.value.storyGroupList?.toMutableList()
+        list?.let {
+            if (it.indexOf(storyGroup) - 1 >= 0) {
+                binding.vpStoryDetail.setCurrentItem(it.indexOf(storyGroup) - 1, true)
+            } else {
+                setCurrentTimeToZero()
+            }
+        }
+    }
+
+    private fun setCurrentTimeToZero() { }
+
     private fun closeStoryDetailView() {
         binding.vpStoryDetail.adapter = null
         binding.vpStoryDetail.visibility = View.GONE
     }
 
-    override fun onStoryPreviousClicked(storyGroup: StoryGroup, position: Int) {
-        TODO("Not yet implemented")
+    override fun onPauseVideo(storyGroup: StoryGroup?, position: Int?) {
+        storyGroup?.let {
+            position?.let {
+                storyGroup.storyList[storyGroup.lastStoryIndex].isPaused = true
+                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
+            }
+        }
+    }
+
+    override fun onResumeVideo(storyGroup: StoryGroup?, position: Int?) {
+        storyGroup?.let {
+            position?.let {
+                storyGroup.storyList[storyGroup.lastStoryIndex].isPaused = false
+                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
+            }
+        }
+    }
+
+    override fun onCloseStory() {
+        closeStoryDetailView()
     }
 
     override fun onDestroyView() {

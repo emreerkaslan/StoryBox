@@ -83,5 +83,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.erkaslan.storybox.ui.component.StoryDetailTouchController
+            android:id="@+id/cl_story_touch_controller"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

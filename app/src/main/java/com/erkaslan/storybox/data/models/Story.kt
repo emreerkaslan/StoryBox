@@ -2,6 +2,7 @@ package com.erkaslan.storybox.data.models
 
 data class Story(
     val type: StoryType? = StoryType.IMAGE,
+    var isPaused: Boolean = false,
     val durationInMillis: Int? = 5000,
     val mediaUri: String? = null
 )

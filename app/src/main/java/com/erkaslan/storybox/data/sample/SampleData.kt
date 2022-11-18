@@ -54,7 +54,7 @@ object SampleData {
                 ),
             ),
             username = "nike",
-            userAvatarUri = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_NIKE.png",
+            userAvatarUri = "https://upload.wikimedia.org/wikipedia/commons/9/94/Old_Nike_logo.jpg",
         ),
         StoryGroup(
             listOf(

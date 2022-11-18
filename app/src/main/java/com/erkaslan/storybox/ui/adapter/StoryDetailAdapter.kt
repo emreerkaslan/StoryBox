@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -44,29 +45,34 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
         (holder as StoryDetailViewHolder).bind(getItem(position))
     }
 
-    inner class StoryDetailViewHolder(private val binding: LayoutStoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class StoryDetailViewHolder(val binding: LayoutStoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(storyGroup: StoryGroup) {
             binding.storyGroup = storyGroup
             binding.pvStoryGroup.initializeProgressView(storyGroup.storyList.size, adapterPosition + 1)
-            when (storyGroup.storyList[storyGroup.lastStoryIndex].type) {
+            binding.clStoryTouchController.setController(listener, adapterPosition, storyGroup)
+            val story = storyGroup.storyList[storyGroup.lastStoryIndex]
+            when (story.type) {
                 StoryType.IMAGE -> {
-                    binding.imageStory = storyGroup.storyList[storyGroup.lastStoryIndex].mediaUri
-                    binding.ivImageStory.setOnClickListener {
-                        listener?.onStoryNextClicked(storyGroup, adapterPosition)
+                    binding.imageStory = story.mediaUri
+                    binding.clStoryTouchController.setOnTouchListener { view, motionEvent ->
+                        view.onTouchEvent(motionEvent)
                     }
                     binding.ivImageStory.visibility = View.VISIBLE
                     binding.vvVideoStory.visibility = View.GONE
                 }
                 StoryType.VIDEO -> {
-                    storyGroup.storyList[storyGroup.lastStoryIndex].mediaUri?.let {
+                    story.mediaUri?.let {
                         binding.vvVideoStory.setVideoURI(it.toUri())
+                        if (story.isPaused) binding.vvVideoStory.pause()
+                        else {
+                            if (binding.vvVideoStory.duration > 0) {
+                                binding.vvVideoStory.resume()
+                            } else {
+                                if (storyGroup.lastStoryIndex != 0) binding.vvVideoStory.start()
+                            }
+                        }
                         binding.vvVideoStory.visibility = View.VISIBLE
                         binding.ivImageStory.visibility = View.GONE
-                        binding.vvVideoStory.setOnClickListener {
-                            binding.vvVideoStory.setVideoURI(null)
-                            listener?.onStoryNextClicked(storyGroup, adapterPosition)
-                        }
-                        binding.vvVideoStory.start()
                         binding.vvVideoStory.requestFocus()
                     }
                 }
@@ -74,9 +80,27 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
             }
         }
     }
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        val binding = (holder as StoryDetailViewHolder).binding
+        if (binding.vvVideoStory.isVisible && binding.storyGroup?.storyList?.get(binding.storyGroup?.lastStoryIndex ?: 0)?.isPaused == false) {
+            holder.binding.vvVideoStory.start()
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        if (!(holder as StoryDetailViewHolder).binding.vvVideoStory.isVisible) {
+            holder.binding.vvVideoStory.pause()
+        }
+    }
 }
 
 interface StoryDetailListener {
-    fun onStoryNextClicked(storyGroup: StoryGroup, position: Int)
-    fun onStoryPreviousClicked(storyGroup: StoryGroup, position: Int)
+    fun onStoryNextClicked(storyGroup: StoryGroup?, position: Int?)
+    fun onStoryPreviousClicked(storyGroup: StoryGroup?, position: Int?)
+    fun onPauseVideo(storyGroup: StoryGroup?, position: Int?)
+    fun onResumeVideo(storyGroup: StoryGroup?, position: Int?)
+    fun onCloseStory()
 }
