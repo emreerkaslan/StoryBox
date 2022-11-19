@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <corners android:radius="5dip" />
-    <gradient
-        android:endColor="@color/lotion"
-        android:centerColor="@color/lotion"
-        android:startColor="@color/lotion" />
-</shape>
+<clip>
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <corners android:radius="5dip" />
+        <gradient
+            android:angle="270"
+            android:centerY="0.75"
+            android:centerColor="@color/lotion"
+            android:endColor="@color/lotion"
+            android:startColor="@color/lotion" />
+    </shape>
+</clip>
