@@ -1,7 +1,7 @@
 package com.erkaslan.storybox.ui.adapter
 
-import android.animation.Animator
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.erkaslan.storybox.data.models.StoryGroup
 import com.erkaslan.storybox.data.models.StoryType
 import com.erkaslan.storybox.databinding.LayoutStoryDetailBinding
-import com.erkaslan.storybox.ui.component.StoryTouchListener
 
 class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(StoryDetailDiffCallback()) {
 
@@ -49,33 +48,9 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
     inner class StoryDetailViewHolder(val binding: LayoutStoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(storyGroup: StoryGroup) {
+            Log.d("TEST", "bind: " + storyGroup.username + " lastItem: " + (storyGroup.lastStoryIndex + 1).toString())
             binding.storyGroup = storyGroup
-            binding.pvStoryGroup.initializeProgressView(storyGroup.storyList.size, storyGroup.lastStoryIndex + 1, object : Animator.AnimatorListener {
-                override fun onAnimationStart(p0: Animator?) { }
-
-                override fun onAnimationEnd(p0: Animator?) {
-                    listener?.onStoryNextClicked(storyGroup, adapterPosition)
-                }
-
-                override fun onAnimationCancel(p0: Animator?) { p0?.removeAllListeners() }
-
-                override fun onAnimationRepeat(p0: Animator?) { }
-            })
-
-            binding.clStoryTouchController.setController(adapterPosition, storyGroup, object : StoryTouchListener {
-                override fun onClose() { listener?.onCloseStory(storyGroup, adapterPosition) }
-
-                override fun onNextClicked() {
-                    binding.pvStoryGroup.reset()
-                    listener?.onStoryNextClicked(storyGroup, adapterPosition)
-                }
-
-                override fun onPause() { listener?.onPauseVideo(storyGroup, adapterPosition) }
-
-                override fun onPreviousClicked() { listener?.onStoryPreviousClicked(storyGroup, adapterPosition) }
-
-                override fun onResume() { listener?.onResumeVideo(storyGroup, adapterPosition) }
-            })
+            binding.pvStoryGroup.initializeProgressView(storyGroup, adapterPosition, listener)
 
             val story = storyGroup.storyList[storyGroup.lastStoryIndex]
             when (story.type) {
@@ -87,22 +62,13 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
                     if (story.isPaused) {
                         binding.pvStoryGroup.pauseAnimation()
                     } else {
-                        if (storyGroup.lastStoryIndex != 0) {
+                        if (storyGroup.lastStoryIndex != 0 || this@StoryDetailViewHolder.itemView.isAttachedToWindow)
                             binding.pvStoryGroup.startAnimation()
-                        }
                     }
                 }
                 StoryType.VIDEO -> {
                     story.mediaUri?.let {
                         binding.vvVideoStory.setVideoURI(it.toUri())
-                        if (story.isPaused) binding.vvVideoStory.pause()
-                        else {
-                            if (binding.vvVideoStory.duration > 0) {
-                                binding.vvVideoStory.resume()
-                            } else {
-                                if (storyGroup.lastStoryIndex != 0) binding.vvVideoStory.start()
-                            }
-                        }
                         binding.vvVideoStory.visibility = View.VISIBLE
                         binding.ivImageStory.visibility = View.GONE
                         binding.vvVideoStory.setOnCompletionListener {
@@ -110,13 +76,12 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
                         }
 
                         if (story.isPaused) {
-                            binding.pvStoryGroup.pauseAnimation()
                             binding.vvVideoStory.pause()
                         } else {
                             if (binding.vvVideoStory.duration > 0) {
                                 binding.vvVideoStory.resume()
                             } else {
-                                if (storyGroup.lastStoryIndex != 0) {
+                                if (storyGroup.lastStoryIndex != 0 || this@StoryDetailViewHolder.itemView.isAttachedToWindow) {
                                     binding.pvStoryGroup.startAnimation()
                                     binding.vvVideoStory.start()
                                 }
@@ -133,6 +98,7 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         super.onViewAttachedToWindow(holder)
+        Log.d("TEST", "attached: " + "bind: " + ((holder as StoryDetailViewHolder).binding?.storyGroup?.username ?: " ") + " lastItem: " + ((holder).binding?.storyGroup?.lastStoryIndex ?: 0 + 1).toString())
         val binding = (holder as StoryDetailViewHolder).binding
         if (binding.storyGroup?.storyList?.get(binding.storyGroup?.lastStoryIndex ?: 0)?.isPaused == false) {
             holder.binding.pvStoryGroup.startAnimation()
