@@ -60,7 +60,6 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 interface StoryDetailListener {
     fun onStoryNextClicked(storyGroup: StoryGroup?, position: Int?)
     fun onStoryPreviousClicked(storyGroup: StoryGroup?, position: Int?)
-    fun onPauseVideo(storyGroup: StoryGroup?, position: Int?)
     fun onResumeVideo(storyGroup: StoryGroup?, position: Int?)
     fun onCloseStory(storyGroup: StoryGroup?, position: Int?)
 }

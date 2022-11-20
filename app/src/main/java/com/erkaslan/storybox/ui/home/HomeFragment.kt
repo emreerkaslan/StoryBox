@@ -192,15 +192,6 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         position?.let { binding.rvStory.scrollToPosition(it) }
     }
 
-    override fun onPauseVideo(storyGroup: StoryGroup?, position: Int?) {
-        storyGroup?.let {
-            position?.let {
-                storyGroup.isInvisible = true
-                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
-            }
-        }
-    }
-
     override fun onResumeVideo(storyGroup: StoryGroup?, position: Int?) {
         storyGroup?.let {
             position?.let {
