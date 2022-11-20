@@ -1,12 +1,15 @@
 package com.erkaslan.storybox.ui.component
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import com.erkaslan.storybox.R
@@ -21,8 +24,15 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
+import kotlin.math.abs
 
 class StoryView : ConstraintLayout {
+
+    companion object {
+        const val SWIPE_THRESHOLD = 150
+        const val STORY_TRANSITION_DIRECTION_THRESHOLD = 0.3
+    }
+
     private var storyImageView: ImageView = ImageView(context).also {
         it.layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         it.scaleType = ImageView.ScaleType.CENTER
@@ -47,49 +57,22 @@ class StoryView : ConstraintLayout {
         it.setPadding(margin25, margin25, margin25, 0)
     }
 
-    private var storyGroup: StoryGroup? = null
-    private var listener: StoryDetailListener? = null
-    private var adapterPosition: Int = 0
-    private var player: ExoPlayer? = null
-    private var currentTime: Long? = null
-
-    private val playerListener = object : Player.Listener {
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            super.onIsPlayingChanged(isPlaying)
-            if (isPlaying) {
-                Log.d("TEST", "playing")
-                Log.d("TEST", "position: " + player?.currentPosition)
-                storyGroupProgressView.setAnimator(
-                    duration = player?.duration
-                        ?: StoryGroupProgressView.DEFAULT_DURATION
-                )
-                storyGroupProgressView.resumeProgress()
-            } else Log.d("TEST", "paused")
-        }
-
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            super.onPlaybackStateChanged(playbackState)
-            when (playbackState) {
-                Player.STATE_IDLE -> {
-                    Log.d("TEST", "IDLE")
-                }
-                Player.STATE_READY -> {
-                    Log.d("TEST", "READY")
-                }
-                Player.STATE_BUFFERING -> {
-                    Log.d("TEST", "BUFFERING")
-                }
-                Player.STATE_ENDED -> {
-                    Log.d("TEST", "ENDED")
-                }
-            }
-        }
-
-        override fun onPlayerError(error: PlaybackException) {
-            super.onPlayerError(error)
-            Log.d("TEST", error.toString())
+    private var storyLoading = ProgressBar(context, null, android.R.attr.progressBarStyle).apply {
+        visibility = VISIBLE
+        indeterminateDrawable.setColorFilter(context.resources.getColor(R.color.deep_carmin_pink) ,android.graphics.PorterDuff.Mode.MULTIPLY)
+        layoutParams = LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            endToEnd = R.id.sv_story_group
+            startToStart = R.id.sv_story_group
+            bottomToBottom = R.id.sv_story_group
+            topToTop = R.id.sv_story_group
         }
     }
+
+    private var storyGroup: StoryGroup? = null
+    private var listener: StoryDetailListener? = null
+    private var position: Int = 0
+    private var player: ExoPlayer? = null
+    private var currentTime: Long? = null
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet)
@@ -103,35 +86,40 @@ class StoryView : ConstraintLayout {
         addView(storyImageView)
         addView(storyVideoView)
         addView(storyGroupProgressView)
+        addView(storyLoading)
     }
 
     fun setStoryGroup(storyGroup: StoryGroup, listener: StoryDetailListener?, adapterPosition: Int) {
         this.storyGroup = storyGroup
         this.listener = listener
-        this.adapterPosition = adapterPosition
+        this.position = adapterPosition
 
         setPlayer()
 
         val story = storyGroup.storyList[storyGroup.lastStoryIndex]
         when (story.type) {
             StoryType.IMAGE -> {
-                player?.stop()
-                storyGroupProgressView.initializeProgressView(storyGroup, adapterPosition, listener)
-                setImage(story.mediaUri)
-                if (!storyGroup.isPaused) storyGroupProgressView.resumeProgress()
+                player?.pause()
+                if (!storyGroup.isInvisible) {
+                    storyGroupProgressView.initializeProgressView(storyGroup, adapterPosition, listener)
+                    setImage(story.mediaUri)
+                    storyGroupProgressView.resumeProgress()
+                }
                 else storyGroupProgressView.pauseProgress()
             }
 
             StoryType.VIDEO -> {
-                if (!storyGroup.isPaused) {
-                    // video is different
+                // story group is visible
+                if (!storyGroup.isInvisible) {
+                    // different video
                     if (player?.currentMediaItem != MediaItem.fromUri(story.mediaUri?.toUri() ?: Uri.EMPTY)) {
                         Log.d("TEST", "video different")
                         currentTime = 0
                         storyGroupProgressView.initializeProgressView(storyGroup, adapterPosition, listener)
+                        storyGroupProgressView.pauseProgress()
                         setVideo(story)
                     }
-                    // video is same
+                    // same video
                     else {
                         Log.d("TEST", "video same: $currentTime")
                         // video not started
@@ -140,7 +128,7 @@ class StoryView : ConstraintLayout {
                             player?.prepare()
                             player?.play()
                         }
-                        // video started
+                        // video in middle
                         else {
                             Log.d("TEST", "video started: $currentTime")
                             player?.prepare()
@@ -148,10 +136,13 @@ class StoryView : ConstraintLayout {
                             player?.play()
                         }
                     }
-                } else {
+                }
+                // story group is invisible
+                else {
                     Log.d("TEST", "player released")
                     storyGroupProgressView.pauseProgress()
                 }
+
                 storyVideoView.visibility = View.VISIBLE
                 storyImageView.visibility = View.GONE
                 storyVideoView.requestFocus()
@@ -161,11 +152,10 @@ class StoryView : ConstraintLayout {
     }
 
     private fun setPlayer() {
-        if (storyGroup?.isPaused == true) {
+        if (storyGroup?.isInvisible == true) {
             Log.d("TEST", "player released")
             player?.release()
         } else {
-            Log.d("TEST", player.toString())
             if (player == null) {
                 Log.d("TEST", "player created")
                 player = ExoPlayer.Builder(context).build()
@@ -175,19 +165,150 @@ class StoryView : ConstraintLayout {
     }
 
     private fun setImage(uri: String?) {
-        DataBindingUtils.loadImageWithPlaceholder(storyImageView, uri, null)
+        DataBindingUtils.loadImageWithPlaceholder(storyImageView, uri, null,
+            onSuccess = {
+                storyLoading.visibility = View.GONE
+            },
+            onFailed = {
+                listener?.onStoryNextClicked(storyGroup, position)
+            })
         storyImageView.visibility = View.VISIBLE
         storyVideoView.visibility = View.GONE
     }
 
     private fun setVideo(story: Story) {
         story.mediaUri?.let {
-            player?.setMediaItem(MediaItem.fromUri(it.toUri()))
-            player?.prepare()
-            Log.d("TEST", "listener added")
             player?.removeListener(playerListener)
             player?.addListener(playerListener)
+            player?.setMediaItem(MediaItem.fromUri(it.toUri()))
+            player?.prepare()
             player?.play()
         }
     }
+
+    private val playerListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            super.onIsPlayingChanged(isPlaying)
+            if (isPlaying) {
+                Log.d("TEST", "video playing")
+                storyGroupProgressView.setAnimator(
+                    duration = player?.duration
+                        ?: StoryGroupProgressView.DEFAULT_DURATION
+                )
+                storyGroupProgressView.resumeProgress()
+                storyLoading.visibility = View.GONE
+            } else {
+                Log.d("TEST", "video paused")
+                storyLoading.visibility = View.VISIBLE
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState)
+            when (playbackState) {
+                Player.STATE_IDLE -> {
+                    Log.d("TEST", "IDLE")
+                }
+                Player.STATE_READY -> {
+                    Log.d("TEST", "READY")
+                }
+                Player.STATE_BUFFERING -> {
+                    Log.d("TEST", "BUFFERING")
+                    storyLoading.visibility = View.VISIBLE
+                }
+                Player.STATE_ENDED -> {
+                    Log.d("TEST", "ENDED")
+                }
+            }
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+            Log.d("TEST", "video error: $error")
+        }
+    }
+
+    private var touchInitialTime = 0L
+    private var touchFinalTime = 0L
+    private var touchInitialPoint = Point(0F,0F)
+    private var touchFinalPoint = Point(0F,0F)
+    private var moveDirection: Direction = Direction.UP
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                Log.d("TEST", "pointer down")
+                touchInitialTime = System.currentTimeMillis()
+                touchInitialPoint = Point(event.x, event.y)
+                storyGroupProgressView.pauseProgress()
+                storyGroup?.let {
+                    if (it.storyList[it.lastStoryIndex].type == StoryType.VIDEO) {
+                        currentTime = player?.currentPosition
+                        player?.pause()
+                    }
+                }
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                Log.d("TEST", "pointer up")
+                touchFinalTime = System.currentTimeMillis()
+                val duration = touchFinalTime - touchInitialTime
+                touchFinalPoint = Point(event.x, event.y)
+
+                val deltaX = touchFinalPoint.x - touchInitialPoint.x
+                val deltaY = touchFinalPoint.y - touchInitialPoint.y
+                moveDirection =
+                    if (abs(deltaY) * 0.5 < abs(deltaX)) {
+                        if (deltaX > 0) Direction.RIGHT else Direction.LEFT
+                    } else {
+                        if(deltaY > 0) Direction.DOWN else Direction.UP
+                    }
+
+                if (moveDirection == Direction.DOWN) {
+                    Log.d("TEST", "swipe bottom")
+                    player?.release()
+                    storyGroupProgressView.resetAll()
+                    listener?.onCloseStory(storyGroup, position)
+                    return true
+                }
+
+                if (duration < SWIPE_THRESHOLD) {
+                    Log.d("TEST", "tap")
+                    storyGroupProgressView.resetAll()
+                    if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
+                        listener?.onStoryNextClicked(storyGroup, position)
+                        return true
+                    } else {
+                        listener?.onStoryPreviousClicked(storyGroup, position)
+                        return true
+                    }
+                } else {
+                    Log.d("TEST", "swipe horizontal")
+                    storyGroupProgressView.resetAll()
+                    if (moveDirection == Direction.LEFT) {
+                        listener?.onStoryPreviousClicked(storyGroup, position)
+                        return true
+                    } else if (moveDirection == Direction.RIGHT) {
+                        listener?.onStoryNextClicked(storyGroup, position)
+                        return true
+                    } else {
+                        listener?.onResumeVideo(storyGroup, position)
+                    }
+                }
+                return true
+            }
+            else -> return true
+        }
+    }
+
+    fun onDestroy() {
+        player?.removeListener(playerListener)
+        player?.release()
+        player = null
+        listener = null
+    }
 }
+
+enum class Direction { UP, DOWN, LEFT, RIGHT }
+class Point(val x: Float, val y: Float)

@@ -24,7 +24,7 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
         @SuppressLint("DiffUtilEquals")
         override fun areContentsTheSame(oldItem: StoryGroup, newItem: StoryGroup): Boolean =
-            oldItem.isPaused == newItem.isPaused && oldItem.isAllStoriesWatched == newItem.isAllStoriesWatched && oldItem.username == newItem.username
+            oldItem.isInvisible == newItem.isInvisible && oldItem.isAllStoriesWatched == newItem.isAllStoriesWatched && oldItem.username == newItem.username
                     && oldItem.storyList == newItem.storyList && oldItem.userAvatarUri == newItem.userAvatarUri
     }
 
@@ -44,10 +44,16 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
     inner class StoryDetailViewHolder(val binding: LayoutStoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(storyGroup: StoryGroup) {
-            Log.d("TEST", "bind: " + storyGroup.username + " " + (storyGroup.lastStoryIndex + 1).toString() + " isActive: " + !storyGroup.isPaused)
+            Log.d("TEST", "bind")
             binding.storyGroup = storyGroup
             binding.svStoryGroup.setStoryGroup(storyGroup, listener, layoutPosition)
         }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        Log.d("TEST", "detached")
+        (holder as? StoryDetailViewHolder)?.binding?.svStoryGroup?.onDestroy()
     }
 }
 

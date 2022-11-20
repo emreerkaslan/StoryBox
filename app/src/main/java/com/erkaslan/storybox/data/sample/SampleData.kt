@@ -78,5 +78,53 @@ object SampleData {
             username = "world_of_interests",
             userAvatarUri = "https://upload.wikimedia.org/wikipedia/commons/4/41/Adam_Kassab_SC_Code.jpg",
         ),
+        StoryGroup(
+            listOf(
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/8/89/Short_%28v%C3%AAtement%29.webm"
+                ),
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/2/29/Mme_de_Rambouillet.jpg"
+                ),
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/4/40/Nevertheless%2C_she_persisted.webm"
+                ),
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/8/80/Marion_Cotillard_%28July_2009%29_1.jpg"
+                ),
+                Story(
+                    type = StoryType.VIDEO,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/2/2c/French_Navy_NH90-orbital.webm"
+                ),
+            ),
+            username = "learn_french",
+            userAvatarUri = "https://upload.wikimedia.org/wikipedia/commons/0/03/Flag_of_France_%28CMYK%29.png",
+        ),
+        StoryGroup(
+            listOf(
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/a/ae/SDCC_2014_-_Kratos_%26_Slave-Leia_%287752992810%29.jpg"
+                ),
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/2/2e/Kratos_cosplayer.jpg"
+                ),
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/b/be/The_Gazette_Cosplay_in_Harajuku_04.jpg"
+                ),
+                Story(
+                    type = StoryType.IMAGE,
+                    mediaUri = "https://upload.wikimedia.org/wikipedia/commons/0/02/Gif_joker_harley.gif"
+                ),
+            ),
+            username = "my_cozy_playzz",
+            userAvatarUri = "https://upload.wikimedia.org/wikipedia/commons/7/7f/Witcher_Netflix_Necklace.jpg",
+        ),
     )
 }

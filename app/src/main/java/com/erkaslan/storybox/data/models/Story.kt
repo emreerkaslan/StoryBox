@@ -11,7 +11,7 @@ data class StoryGroup(
     val userAvatarUri: String? = null,
     var lastStoryIndex: Int = 0,
     var isAllStoriesWatched: Boolean = false,
-    var isPaused: Boolean = true,
+    var isInvisible: Boolean = true,
 )
 
 enum class StoryType {

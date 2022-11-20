@@ -1,6 +1,7 @@
 package com.erkaslan.storybox.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -61,15 +62,13 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
             binding.vpStoryDetail.visibility = View.VISIBLE
             binding.vpStoryDetail.adapter = StoryDetailAdapter().also {
                 it.setStoryDetailListener(this)
-                val list = viewModel.viewState.value.storyGroupList?.apply { get(storyIndex).isPaused = false }?.toMutableList()
+                val list = viewModel.viewState.value.storyGroupList?.apply { get(storyIndex).isInvisible = false }?.toMutableList()
                 it.submitList(list)
             }
             binding.vpStoryDetail.setPageTransformer(CubicalPageTransformer())
             binding.vpStoryDetail.registerOnPageChangeCallback(pagerChangeCallback)
-            binding.vpStoryDetail.setCurrentItem(storyIndex, false)
-        } else {
-            binding.vpStoryDetail.setCurrentItem(storyIndex, false)
         }
+        binding.vpStoryDetail.setCurrentItem(storyIndex, false)
         binding.vpStoryDetail.requestLayout()
     }
 
@@ -77,31 +76,36 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         override fun onPageScrollStateChanged(state: Int) {
             super.onPageScrollStateChanged(state)
             when (state) {
-                ViewPager2.SCROLL_STATE_IDLE, ViewPager2.SCROLL_STATE_SETTLING -> {
+                // set story visible states if pager is swiped
+                ViewPager2.SCROLL_STATE_IDLE -> {
+                    Log.d("TEST", "IDLE")
                     val list = viewModel.viewState.value.storyGroupList
                     list?.let { list ->
                         val currentIndex = binding.vpStoryDetail.currentItem
                         if (currentIndex > 0) {
                             val previousGroup = list[currentIndex - 1]
-                            if (!previousGroup.isPaused) {
-                                previousGroup.isPaused = true
-                                (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(currentIndex - 1)
+                            if (!previousGroup.isInvisible) {
+                                previousGroup.isInvisible = true
+                                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(currentIndex - 1)
                             }
                         }
+
                         if (currentIndex < list.size - 1) {
                             val nextGroup = list[currentIndex + 1]
-                            if (!nextGroup.isPaused) {
-                                nextGroup.isPaused = true
-                                (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(currentIndex + 1)
+                            if (!nextGroup.isInvisible) {
+                                nextGroup.isInvisible = true
+                                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(currentIndex + 1)
                             }
                         }
+
                         val currentGroup = list[currentIndex]
-                        currentGroup.isPaused = false
-                        (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(currentIndex)
+                        currentGroup.isInvisible = false
+                        (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(currentIndex)
                     }
                 }
-                ViewPager2.SCROLL_STATE_DRAGGING -> { }
-
+                ViewPager2.SCROLL_STATE_DRAGGING -> {
+                    Log.d("TEST", "DRAGGING")
+                }
                 else -> { }
             }
         }
@@ -113,7 +117,7 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                 val nextIndex = storyGroup.lastStoryIndex + 1
                 if (nextIndex < storyGroup.storyList.size) {
                     storyGroup.lastStoryIndex = nextIndex
-                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                    (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                 } else {
                     if (nextIndex == storyGroup.storyList.size) storyGroup.isAllStoriesWatched = true
                     goToNextGroup(storyGroup)
@@ -127,8 +131,8 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         list?.let {
             val nextGroupIndex = it.indexOf(storyGroup) + 1
             if (it.size > nextGroupIndex) {
-                list[nextGroupIndex].isPaused = false
-                (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(nextGroupIndex)
+                list[nextGroupIndex].isInvisible = false
+                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(nextGroupIndex)
                 binding.vpStoryDetail.setCurrentItem(it.indexOf(storyGroup) + 1, true)
             } else {
                 closeStoryDetailView()
@@ -142,17 +146,17 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                 val previousIndex = storyGroup.lastStoryIndex - 1
                 if (previousIndex > -1) {
                     storyGroup.lastStoryIndex = previousIndex
-                    storyGroup.isPaused = false
-                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                    storyGroup.isInvisible = false
+                    (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                 } else {
                     val list = viewModel.viewState.value.storyGroupList?.toMutableList()
                     val previousGroupIndex = list?.indexOf(storyGroup)?.minus(1)
                     val previousGroup = list?.get(previousGroupIndex ?: 0)
                     if (previousIndex == -1) {
-                        storyGroup.isPaused = true
+                        storyGroup.isInvisible = true
                         storyGroup.lastStoryIndex = 0
                     }
-                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(position)
+                    (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                     goToPreviousGroup(previousGroup, previousGroupIndex)
                 }
             }
@@ -163,23 +167,19 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         storyGroup?.let {
             index?.let {
                 if (index >= 0) {
-                    storyGroup.isPaused = false
-                    (binding.vpStoryDetail.adapter as StoryDetailAdapter).notifyItemChanged(index)
+                    storyGroup.isInvisible = false
+                    (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(index)
                     binding.vpStoryDetail.setCurrentItem(index, true)
-                } else {
-                    setCurrentTimeToZero()
                 }
             }
         }
     }
 
-    private fun setCurrentTimeToZero() { }
-
     private fun closeStoryDetailView(storyGroup: StoryGroup? = null, position: Int? = null) {
         binding.vpStoryDetail.isClickable = false
         storyGroup?.let {
             position?.let {
-                storyGroup.isPaused = true
+                storyGroup.isInvisible = true
                 val nextIndex = storyGroup.lastStoryIndex + 1
                 if (nextIndex < storyGroup.storyList.size) storyGroup.lastStoryIndex = nextIndex
                 else if (nextIndex == storyGroup.storyList.size) storyGroup.isAllStoriesWatched = true
@@ -189,12 +189,13 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
         GeneralUtils.slideStory(binding.vpStoryDetail, binding.vpStoryDetail.y.toInt(), requireActivity().window.decorView.height)
         binding.vpStoryDetail.adapter = null
         binding.rvStory.adapter?.notifyDataSetChanged()
+        position?.let { binding.rvStory.scrollToPosition(it) }
     }
 
     override fun onPauseVideo(storyGroup: StoryGroup?, position: Int?) {
         storyGroup?.let {
             position?.let {
-                storyGroup.isPaused = true
+                storyGroup.isInvisible = true
                 (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
             }
         }
@@ -203,7 +204,7 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
     override fun onResumeVideo(storyGroup: StoryGroup?, position: Int?) {
         storyGroup?.let {
             position?.let {
-                storyGroup.isPaused = false
+                storyGroup.isInvisible = false
                 (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
             }
         }
