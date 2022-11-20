@@ -70,7 +70,7 @@ class StoryGroupProgressView : LinearLayout {
                     override fun onAnimationCancel(p0: Animator?) { p0?.removeAllListeners() }
                     override fun onAnimationRepeat(p0: Animator?) { }
                     override fun onAnimationEnd(p0: Animator?) {
-                        Log.d("TEST", "progress end: " + storyGroup?.username + " " + " " + currentStoryIndex + " duration: " + duration)
+                        Log.d("STORYBOX", "progress end: " + storyGroup?.username + " " + " " + currentStoryIndex + " duration: " + duration)
                         onPauseVideo?.invoke()
                         listener?.onStoryNextClicked(storyGroup, position)
                     }

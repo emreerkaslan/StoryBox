@@ -44,7 +44,7 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
     inner class StoryDetailViewHolder(val binding: LayoutStoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(storyGroup: StoryGroup) {
-            Log.d("TEST", "bind")
+            Log.d("STORYBOX", "bind")
             binding.storyGroup = storyGroup
             binding.svStoryGroup.setStoryGroup(storyGroup, listener, layoutPosition)
         }
@@ -52,7 +52,7 @@ class StoryDetailAdapter : ListAdapter<StoryGroup, RecyclerView.ViewHolder>(Stor
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
         super.onViewDetachedFromWindow(holder)
-        Log.d("TEST", "detached")
+        Log.d("STORYBOX", "detached")
         (holder as? StoryDetailViewHolder)?.binding?.svStoryGroup?.onDestroy()
     }
 }

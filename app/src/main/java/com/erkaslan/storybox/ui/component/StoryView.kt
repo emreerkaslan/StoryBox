@@ -113,7 +113,7 @@ class StoryView : ConstraintLayout {
                 if (!storyGroup.isInvisible) {
                     // different video
                     if (player?.currentMediaItem != MediaItem.fromUri(story.mediaUri?.toUri() ?: Uri.EMPTY)) {
-                        Log.d("TEST", "video different")
+                        Log.d("STORYBOX", "video different")
                         currentTime = 0
                         storyGroupProgressView.initializeProgressView(storyGroup, adapterPosition, listener)
                         storyGroupProgressView.pauseProgress()
@@ -121,16 +121,16 @@ class StoryView : ConstraintLayout {
                     }
                     // same video
                     else {
-                        Log.d("TEST", "video same: $currentTime")
+                        Log.d("STORYBOX", "video same: $currentTime")
                         // video not started
                         if ((currentTime ?: 0) <= 0) {
-                            Log.d("TEST", "video not started: $currentTime")
+                            Log.d("STORYBOX", "video not started: $currentTime")
                             player?.prepare()
                             player?.play()
                         }
                         // video in middle
                         else {
-                            Log.d("TEST", "video started: $currentTime")
+                            Log.d("STORYBOX", "video started: $currentTime")
                             player?.prepare()
                             currentTime?.let { player?.seekTo(it) }
                             player?.play()
@@ -139,7 +139,7 @@ class StoryView : ConstraintLayout {
                 }
                 // story group is invisible
                 else {
-                    Log.d("TEST", "player released")
+                    Log.d("STORYBOX", "player released")
                     storyGroupProgressView.pauseProgress()
                 }
 
@@ -153,11 +153,11 @@ class StoryView : ConstraintLayout {
 
     private fun setPlayer() {
         if (storyGroup?.isInvisible == true) {
-            Log.d("TEST", "player released")
+            Log.d("STORYBOX", "player released")
             player?.release()
         } else {
             if (player == null) {
-                Log.d("TEST", "player created")
+                Log.d("STORYBOX", "player created")
                 player = ExoPlayer.Builder(context).build()
                 storyVideoView.player = player
             }
@@ -190,7 +190,7 @@ class StoryView : ConstraintLayout {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
             if (isPlaying) {
-                Log.d("TEST", "video playing")
+                Log.d("STORYBOX", "video playing")
                 storyGroupProgressView.setAnimator(
                     duration = player?.duration
                         ?: StoryGroupProgressView.DEFAULT_DURATION
@@ -198,7 +198,7 @@ class StoryView : ConstraintLayout {
                 storyGroupProgressView.resumeProgress()
                 storyLoading.visibility = View.GONE
             } else {
-                Log.d("TEST", "video paused")
+                Log.d("STORYBOX", "video paused")
                 storyLoading.visibility = View.VISIBLE
             }
         }
@@ -207,24 +207,24 @@ class StoryView : ConstraintLayout {
             super.onPlaybackStateChanged(playbackState)
             when (playbackState) {
                 Player.STATE_IDLE -> {
-                    Log.d("TEST", "IDLE")
+                    Log.d("STORYBOX", "IDLE")
                 }
                 Player.STATE_READY -> {
-                    Log.d("TEST", "READY")
+                    Log.d("STORYBOX", "READY")
                 }
                 Player.STATE_BUFFERING -> {
-                    Log.d("TEST", "BUFFERING")
+                    Log.d("STORYBOX", "BUFFERING")
                     storyLoading.visibility = View.VISIBLE
                 }
                 Player.STATE_ENDED -> {
-                    Log.d("TEST", "ENDED")
+                    Log.d("STORYBOX", "ENDED")
                 }
             }
         }
 
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
-            Log.d("TEST", "video error: $error")
+            Log.d("STORYBOX", "video error: $error")
         }
     }
 
@@ -238,7 +238,7 @@ class StoryView : ConstraintLayout {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                Log.d("TEST", "pointer down")
+                Log.d("STORYBOX", "pointer down")
                 touchInitialTime = System.currentTimeMillis()
                 touchInitialPoint = Point(event.x, event.y)
                 storyGroupProgressView.pauseProgress()
@@ -251,7 +251,7 @@ class StoryView : ConstraintLayout {
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                Log.d("TEST", "pointer up")
+                Log.d("STORYBOX", "pointer up")
                 touchFinalTime = System.currentTimeMillis()
                 val duration = touchFinalTime - touchInitialTime
                 touchFinalPoint = Point(event.x, event.y)
@@ -266,7 +266,7 @@ class StoryView : ConstraintLayout {
                     }
 
                 if (moveDirection == Direction.DOWN) {
-                    Log.d("TEST", "swipe bottom")
+                    Log.d("STORYBOX", "swipe bottom")
                     player?.release()
                     storyGroupProgressView.resetAll()
                     listener?.onCloseStory(storyGroup, position)
@@ -274,7 +274,7 @@ class StoryView : ConstraintLayout {
                 }
 
                 if (duration < SWIPE_THRESHOLD) {
-                    Log.d("TEST", "tap")
+                    Log.d("STORYBOX", "tap")
                     storyGroupProgressView.resetAll()
                     if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
                         listener?.onStoryNextClicked(storyGroup, position)
@@ -284,7 +284,7 @@ class StoryView : ConstraintLayout {
                         return true
                     }
                 } else {
-                    Log.d("TEST", "swipe horizontal")
+                    Log.d("STORYBOX", "swipe horizontal")
                     storyGroupProgressView.resetAll()
                     if (moveDirection == Direction.LEFT) {
                         listener?.onStoryPreviousClicked(storyGroup, position)

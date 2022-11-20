@@ -78,7 +78,7 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
             when (state) {
                 // set story visible states if pager is swiped
                 ViewPager2.SCROLL_STATE_IDLE -> {
-                    Log.d("TEST", "IDLE")
+                    Log.d("STORYBOX", "IDLE")
                     val list = viewModel.viewState.value.storyGroupList
                     list?.let { list ->
                         val currentIndex = binding.vpStoryDetail.currentItem
@@ -104,7 +104,7 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                     }
                 }
                 ViewPager2.SCROLL_STATE_DRAGGING -> {
-                    Log.d("TEST", "DRAGGING")
+                    Log.d("STORYBOX", "DRAGGING")
                 }
                 else -> { }
             }
