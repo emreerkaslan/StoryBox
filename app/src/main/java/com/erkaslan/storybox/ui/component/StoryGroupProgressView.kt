@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -13,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import com.erkaslan.storybox.R
 import com.erkaslan.storybox.data.models.StoryGroup
+import com.erkaslan.storybox.data.models.StoryType
 import com.erkaslan.storybox.ui.adapter.StoryDetailListener
 import kotlin.math.abs
 
@@ -41,6 +43,7 @@ class StoryGroupProgressView : LinearLayout {
     private var position: Int = 0
     private var currentStoryIndex: Int = 0
     private var storyGroup: StoryGroup? = null
+    var onPauseVideo: (() -> Unit)? = null
 
     constructor(context: Context) : super(context)
 
@@ -52,8 +55,8 @@ class StoryGroupProgressView : LinearLayout {
         defStyleAttr
     )
 
-    fun initializeProgressView (storyGroup: StoryGroup, adapterPosition: Int, touchListener: StoryDetailListener?) {
-        resetAll()
+    fun initializeProgressView (storyGroup: StoryGroup, adapterPosition: Int, touchListener: StoryDetailListener?, duration: Long? = null) {
+        reset()
         this.storyGroup = storyGroup
         this.listener = touchListener
         this.totalBarCount = storyGroup.storyList.size
@@ -67,17 +70,20 @@ class StoryGroupProgressView : LinearLayout {
 
             if (index + 1 != totalBarCount) addSpace()
         }
-        setAnimator()
+        setAnimator(duration = duration ?: DEFAULT_DURATION)
     }
 
-    private fun setAnimator(itemNumber: Int = currentStoryIndex) {
+    fun setAnimator(itemNumber: Int = currentStoryIndex, duration: Long = DEFAULT_DURATION) {
+        currentAnimator = null
         currentAnimator = ObjectAnimator.ofInt(progressBarList[itemNumber], "progress", PROGRESS_LIMIT).also { animation ->
-            animation.duration = DEFAULT_DURATION
+            animation.duration = duration
             animation.interpolator = LinearInterpolator()
             animation.addListener(object : AnimatorListener {
                 override fun onAnimationStart(p0: Animator?) { }
 
                 override fun onAnimationEnd(p0: Animator?) {
+                    Log.d("TEST", "progress end")
+                    onPauseVideo?.invoke()
                     listener?.onStoryNextClicked(storyGroup, position)
                 }
 
@@ -109,16 +115,19 @@ class StoryGroupProgressView : LinearLayout {
         addView(spaceView)
     }
 
-    fun startAnimation() { currentAnimator?.start() }
-
-    fun pauseAnimation() { currentAnimator?.pause() }
-
-    fun reset() {
-        currentAnimator?.removeAllListeners()
-        resetAll()
+    fun resumeProgress() {
+        if (currentAnimator?.isPaused == true) currentAnimator?.resume()
+        else currentAnimator?.start()
     }
 
-    fun resetAll() {
+    fun pauseProgress() { currentAnimator?.pause() }
+
+    private fun resetAll() {
+        currentAnimator?.removeAllListeners()
+        reset()
+    }
+
+    private fun reset() {
         removeAllViews()
         progressBarList.clear()
         currentAnimator = null
@@ -128,13 +137,16 @@ class StoryGroupProgressView : LinearLayout {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                //Log.d("TEST", "down")
                 touchInitialTime = System.currentTimeMillis()
                 touchInitialPoint = Point(event.x, event.y)
                 currentAnimator?.pause()
-                listener?.onPauseVideo(storyGroup, position)
+                if (storyGroup?.storyList?.get(currentStoryIndex)?.type == StoryType.VIDEO)
+                    onPauseVideo?.invoke()
                 return true
             }
             MotionEvent.ACTION_UP -> {
+                //Log.d("TEST", "up")
                 touchFinalTime = System.currentTimeMillis()
                 val duration = touchFinalTime - touchInitialTime
                 touchFinalPoint = Point(event.x, event.y)
@@ -149,29 +161,35 @@ class StoryGroupProgressView : LinearLayout {
                     }
 
                 if (moveDirection == Direction.DOWN) {
-                    reset()
+                    //Log.d("TEST", "swipe bottom")
+                    resetAll()
                     listener?.onCloseStory(storyGroup, position)
                     return true
                 }
 
                 if (duration < SWIPE_THRESHOLD) {
-                    if((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryGroupProgressView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
-                        reset()
+                    //Log.d("TEST", "tap")
+                    resetAll()
+                    if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryGroupProgressView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
                         listener?.onStoryNextClicked(storyGroup, position)
+                        return true
                     } else {
-                        reset()
                         listener?.onStoryPreviousClicked(storyGroup, position)
+                        return true
                     }
                 } else {
+                    //Log.d("TEST", "2")
+                    resetAll()
                     if (moveDirection == Direction.LEFT) {
-                        reset()
                         listener?.onStoryPreviousClicked(storyGroup, position)
+                        return true
                     } else if (moveDirection == Direction.RIGHT) {
-                        reset()
                         listener?.onStoryNextClicked(storyGroup, position)
+                        return true
+                    } else {
+                        listener?.onResumeVideo(storyGroup, position)
                     }
                 }
-                listener?.onResumeVideo(storyGroup, position)
                 return true
             }
             else -> return true

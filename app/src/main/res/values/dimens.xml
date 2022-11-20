@@ -7,6 +7,8 @@
     <!-- Margin -->
     <dimen name="margin_25">5dp</dimen>
     <dimen name="margin_50">10dp</dimen>
+    <dimen name="margin_75">15dp</dimen>
+    <dimen name="margin_150">30dp</dimen>
 
     <!-- Font Size -->
     <dimen name="font_size_100">10sp</dimen>

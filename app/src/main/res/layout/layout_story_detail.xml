@@ -7,14 +7,6 @@
         <variable
             name="storyGroup"
             type="com.erkaslan.storybox.data.models.StoryGroup" />
-
-        <variable
-            name="imageStory"
-            type="String" />
-
-        <variable
-            name="currentTime"
-            type="Integer" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -23,36 +15,24 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_story_detail">
 
-        <ImageView
-            android:id="@+id/iv_image_story"
+        <com.erkaslan.storybox.ui.component.StoryView
+            android:id="@+id/sv_story_group"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="center"
-            app:imageUrl="@{imageStory}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <VideoView
-            android:id="@+id/vv_video_story"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <LinearLayout
             android:id="@+id/ll_user_area"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_50"
-            android:layout_marginTop="@dimen/margin_50"
+            android:layout_marginStart="@dimen/margin_75"
+            android:layout_marginTop="@dimen/margin_150"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pv_story_group">
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/iv_user_avatar"
@@ -73,15 +53,5 @@
                 android:textSize="@dimen/font_size_120"
                 android:textStyle="bold" />
         </LinearLayout>
-
-        <com.erkaslan.storybox.ui.component.StoryGroupProgressView
-            android:id="@+id/pv_story_group"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="@dimen/margin_25"
-            android:paddingTop="@dimen/margin_50"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
