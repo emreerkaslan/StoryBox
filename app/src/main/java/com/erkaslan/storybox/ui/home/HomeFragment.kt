@@ -141,7 +141,7 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
     }
 
     override fun onStoryPreviousClicked(storyGroup: StoryGroup?, position: Int?) {
-        storyGroup?.let {
+        storyGroup?.let initial@{
             position?.let {
                 val previousIndex = storyGroup.lastStoryIndex - 1
                 if (previousIndex > -1) {
@@ -150,12 +150,16 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                     (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                 } else {
                     val list = viewModel.viewState.value.storyGroupList?.toMutableList()
-                    val previousGroupIndex = list?.indexOf(storyGroup)?.minus(1)
-                    val previousGroup = list?.get(previousGroupIndex ?: 0)
+                    val previousGroupIndex = list?.indexOf(storyGroup)?.minus(1) ?: -1
+                    if (previousGroupIndex <= -1) {
+                        closeStoryDetailView(storyGroup, position)
+                        return@initial
+                    }
                     if (previousIndex == -1) {
                         storyGroup.isInvisible = true
                         storyGroup.lastStoryIndex = 0
                     }
+                    val previousGroup = list?.get(previousGroupIndex ?: 0)
                     (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                     goToPreviousGroup(previousGroup, previousGroupIndex)
                 }
@@ -166,11 +170,9 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
     private fun goToPreviousGroup(storyGroup: StoryGroup?, index: Int?) {
         storyGroup?.let {
             index?.let {
-                if (index >= 0) {
-                    storyGroup.isInvisible = false
-                    (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(index)
-                    binding.vpStoryDetail.setCurrentItem(index, true)
-                }
+                storyGroup.isInvisible = false
+                (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(index)
+                binding.vpStoryDetail.setCurrentItem(index, true)
             }
         }
     }

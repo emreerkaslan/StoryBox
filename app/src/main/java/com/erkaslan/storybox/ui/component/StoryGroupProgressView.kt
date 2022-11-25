@@ -60,7 +60,7 @@ class StoryGroupProgressView : LinearLayout {
     }
 
     fun setAnimator(itemNumber: Int = currentStoryIndex, duration: Long = DEFAULT_DURATION) {
-        progressBarList.isNotEmpty().also {
+        progressBarList.isNotEmpty().run {
             currentAnimator = null
             currentAnimator = ObjectAnimator.ofInt(progressBarList[itemNumber], "progress", PROGRESS_LIMIT).also { animation ->
                 animation.duration = duration
@@ -116,5 +116,9 @@ class StoryGroupProgressView : LinearLayout {
         removeAllViews()
         progressBarList.clear()
         currentAnimator = null
+    }
+
+    fun restart () {
+        progressBarList[position].progress = 0
     }
 }

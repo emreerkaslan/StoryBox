@@ -125,6 +125,7 @@ class StoryView : ConstraintLayout {
                         // video not started
                         if ((currentTime ?: 0) <= 0) {
                             Log.d("STORYBOX", "video not started: $currentTime")
+                            storyGroupProgressView.restart()
                             player?.prepare()
                             player?.play()
                         }
@@ -154,6 +155,7 @@ class StoryView : ConstraintLayout {
     private fun setPlayer() {
         if (storyGroup?.isInvisible == true) {
             Log.d("STORYBOX", "player released")
+            currentTime = 0
             player?.release()
         } else {
             if (player == null) {
@@ -214,6 +216,7 @@ class StoryView : ConstraintLayout {
                 }
                 Player.STATE_BUFFERING -> {
                     Log.d("STORYBOX", "BUFFERING")
+                    storyGroupProgressView.pauseProgress()
                     storyLoading.visibility = View.VISIBLE
                 }
                 Player.STATE_ENDED -> {
@@ -276,12 +279,12 @@ class StoryView : ConstraintLayout {
                 if (duration < SWIPE_THRESHOLD) {
                     Log.d("STORYBOX", "tap")
                     storyGroupProgressView.resetAll()
-                    if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
+                    return if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
                         listener?.onStoryNextClicked(storyGroup, position)
-                        return true
+                        true
                     } else {
                         listener?.onStoryPreviousClicked(storyGroup, position)
-                        return true
+                        true
                     }
                 } else {
                     Log.d("STORYBOX", "swipe horizontal")
