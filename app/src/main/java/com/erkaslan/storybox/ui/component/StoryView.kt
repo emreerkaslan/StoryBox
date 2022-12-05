@@ -94,16 +94,16 @@ class StoryView : ConstraintLayout {
         this.listener = listener
         this.position = adapterPosition
 
-        setPlayer()
-
         val story = storyGroup.storyList[storyGroup.lastStoryIndex]
+        setPlayer(story)
+
         when (story.type) {
             StoryType.IMAGE -> {
                 player?.pause()
                 if (!storyGroup.isInvisible) {
+                    storyLoading.visibility = View.VISIBLE
                     storyGroupProgressView.initializeProgressView(storyGroup, adapterPosition, listener)
                     setImage(story.mediaUri)
-                    storyGroupProgressView.resumeProgress()
                 }
                 else storyGroupProgressView.pauseProgress()
             }
@@ -152,11 +152,11 @@ class StoryView : ConstraintLayout {
         }
     }
 
-    private fun setPlayer() {
-        if (storyGroup?.isInvisible == true) {
+    private fun setPlayer(story: Story) {
+        if (storyGroup?.isInvisible == true || story.type == StoryType.IMAGE) {
             Log.d("STORYBOX", "player released")
             currentTime = 0
-            player?.release()
+            player?.setMediaItem(MediaItem.fromUri(Uri.EMPTY))
         } else {
             if (player == null) {
                 Log.d("STORYBOX", "player created")
@@ -170,6 +170,7 @@ class StoryView : ConstraintLayout {
         DataBindingUtils.loadImageWithPlaceholder(storyImageView, uri, null,
             onSuccess = {
                 storyLoading.visibility = View.GONE
+                storyGroupProgressView.resumeProgress()
             },
             onFailed = {
                 listener?.onStoryNextClicked(storyGroup, position)
@@ -288,11 +289,12 @@ class StoryView : ConstraintLayout {
                     }
                 } else {
                     Log.d("STORYBOX", "swipe horizontal")
-                    storyGroupProgressView.resetAll()
                     if (moveDirection == Direction.LEFT) {
+                        storyGroupProgressView.resetAll()
                         listener?.onStoryPreviousClicked(storyGroup, position)
                         return true
                     } else if (moveDirection == Direction.RIGHT) {
+                        storyGroupProgressView.resetAll()
                         listener?.onStoryNextClicked(storyGroup, position)
                         return true
                     } else {

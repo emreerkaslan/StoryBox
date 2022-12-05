@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import com.erkaslan.storybox.R
 import com.erkaslan.storybox.data.models.StoryGroup
+import com.erkaslan.storybox.data.models.StoryType
 import com.erkaslan.storybox.ui.adapter.StoryDetailListener
 
 class StoryGroupProgressView : LinearLayout {
@@ -42,7 +43,7 @@ class StoryGroupProgressView : LinearLayout {
     )
 
     fun initializeProgressView (storyGroup: StoryGroup, adapterPosition: Int, touchListener: StoryDetailListener?, duration: Long? = null) {
-        if (storyGroup.lastStoryIndex == currentStoryIndex) return
+        if (storyGroup.storyList[storyGroup.lastStoryIndex].type == StoryType.IMAGE && storyGroup.lastStoryIndex == currentStoryIndex) return
         reset()
         this.storyGroup = storyGroup
         this.listener = touchListener
@@ -60,22 +61,30 @@ class StoryGroupProgressView : LinearLayout {
     }
 
     fun setAnimator(itemNumber: Int = currentStoryIndex, duration: Long = DEFAULT_DURATION) {
-        progressBarList.isNotEmpty().run {
+        if (progressBarList.isNotEmpty()) {
             currentAnimator = null
-            currentAnimator = ObjectAnimator.ofInt(progressBarList[itemNumber], "progress", PROGRESS_LIMIT).also { animation ->
-                animation.duration = duration
-                animation.interpolator = LinearInterpolator()
-                animation.addListener(object : AnimatorListener {
-                    override fun onAnimationStart(p0: Animator?) { }
-                    override fun onAnimationCancel(p0: Animator?) { p0?.removeAllListeners() }
-                    override fun onAnimationRepeat(p0: Animator?) { }
-                    override fun onAnimationEnd(p0: Animator?) {
-                        Log.d("STORYBOX", "progress end: " + storyGroup?.username + " " + " " + currentStoryIndex + " duration: " + duration)
-                        onPauseVideo?.invoke()
-                        listener?.onStoryNextClicked(storyGroup, position)
+            currentAnimator =
+                ObjectAnimator.ofInt(progressBarList[itemNumber], "progress", PROGRESS_LIMIT)
+                    .also { animation ->
+                        animation.duration = duration
+                        animation.interpolator = LinearInterpolator()
+                        animation.addListener(object : AnimatorListener {
+                            override fun onAnimationStart(p0: Animator?) {}
+                            override fun onAnimationCancel(p0: Animator?) {
+                                p0?.removeAllListeners()
+                            }
+
+                            override fun onAnimationRepeat(p0: Animator?) {}
+                            override fun onAnimationEnd(p0: Animator?) {
+                                Log.d(
+                                    "STORYBOX",
+                                    "progress end: " + storyGroup?.username + " " + " " + currentStoryIndex + " duration: " + duration
+                                )
+                                onPauseVideo?.invoke()
+                                listener?.onStoryNextClicked(storyGroup, position)
+                            }
+                        })
                     }
-                })
-            }
         }
     }
 
@@ -119,6 +128,6 @@ class StoryGroupProgressView : LinearLayout {
     }
 
     fun restart () {
-        progressBarList[position].progress = 0
+        if (progressBarList.isNotEmpty()) { progressBarList[position].progress = 0 }
     }
 }
