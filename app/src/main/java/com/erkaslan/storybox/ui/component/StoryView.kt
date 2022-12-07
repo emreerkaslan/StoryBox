@@ -70,7 +70,7 @@ class StoryView : ConstraintLayout {
 
     private var storyGroup: StoryGroup? = null
     private var listener: StoryDetailListener? = null
-    private var position: Int = 0
+    private var adapterPosition: Int = 0
     private var player: ExoPlayer? = null
     private var currentTime: Long? = null
 
@@ -92,10 +92,11 @@ class StoryView : ConstraintLayout {
     fun setStoryGroup(storyGroup: StoryGroup, listener: StoryDetailListener?, adapterPosition: Int) {
         this.storyGroup = storyGroup
         this.listener = listener
-        this.position = adapterPosition
+        this.adapterPosition = adapterPosition
 
         val story = storyGroup.storyList[storyGroup.lastStoryIndex]
         setPlayer(story)
+        setProgressView()
 
         when (story.type) {
             StoryType.IMAGE -> {
@@ -166,6 +167,10 @@ class StoryView : ConstraintLayout {
         }
     }
 
+    private fun setProgressView() {
+        if (storyGroup?.isInvisible == true) storyGroupProgressView.currentStoryIndex = -1
+    }
+
     private fun setImage(uri: String?) {
         DataBindingUtils.loadImageWithPlaceholder(storyImageView, uri, null,
             onSuccess = {
@@ -173,7 +178,7 @@ class StoryView : ConstraintLayout {
                 storyGroupProgressView.resumeProgress()
             },
             onFailed = {
-                listener?.onStoryNextClicked(storyGroup, position)
+                listener?.onStoryNextClicked(storyGroup, adapterPosition)
             })
         storyImageView.visibility = View.VISIBLE
         storyVideoView.visibility = View.GONE
@@ -273,7 +278,7 @@ class StoryView : ConstraintLayout {
                     Log.d("STORYBOX", "swipe bottom")
                     player?.release()
                     storyGroupProgressView.resetAll()
-                    listener?.onCloseStory(storyGroup, position)
+                    listener?.onCloseStory(storyGroup, adapterPosition)
                     return true
                 }
 
@@ -281,24 +286,24 @@ class StoryView : ConstraintLayout {
                     Log.d("STORYBOX", "tap")
                     storyGroupProgressView.resetAll()
                     return if ((touchFinalPoint.x + touchInitialPoint.x)/2 > this@StoryView.width * STORY_TRANSITION_DIRECTION_THRESHOLD) {
-                        listener?.onStoryNextClicked(storyGroup, position)
+                        listener?.onStoryNextClicked(storyGroup, adapterPosition)
                         true
                     } else {
-                        listener?.onStoryPreviousClicked(storyGroup, position)
+                        listener?.onStoryPreviousClicked(storyGroup, adapterPosition)
                         true
                     }
                 } else {
                     Log.d("STORYBOX", "swipe horizontal")
                     if (moveDirection == Direction.LEFT) {
                         storyGroupProgressView.resetAll()
-                        listener?.onStoryPreviousClicked(storyGroup, position)
+                        listener?.onStoryPreviousClicked(storyGroup, adapterPosition)
                         return true
                     } else if (moveDirection == Direction.RIGHT) {
                         storyGroupProgressView.resetAll()
-                        listener?.onStoryNextClicked(storyGroup, position)
+                        listener?.onStoryNextClicked(storyGroup, adapterPosition)
                         return true
                     } else {
-                        listener?.onResumeVideo(storyGroup, position)
+                        listener?.onResumeVideo(storyGroup, adapterPosition)
                     }
                 }
                 return true

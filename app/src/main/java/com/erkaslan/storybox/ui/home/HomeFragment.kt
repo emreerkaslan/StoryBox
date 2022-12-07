@@ -119,7 +119,10 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                     storyGroup.lastStoryIndex = nextIndex
                     (binding.vpStoryDetail.adapter as? StoryDetailAdapter)?.notifyItemChanged(position)
                 } else {
-                    if (nextIndex == storyGroup.storyList.size) storyGroup.isAllStoriesWatched = true
+                    if (nextIndex == storyGroup.storyList.size) {
+                        storyGroup.isAllStoriesWatched = true
+                        storyGroup.lastStoryIndex = 0
+                    }
                     goToNextGroup(storyGroup)
                 }
             }
@@ -184,7 +187,10 @@ class HomeFragment : Fragment(), StoryListener, StoryDetailListener {
                 storyGroup.isInvisible = true
                 val nextIndex = storyGroup.lastStoryIndex + 1
                 if (nextIndex < storyGroup.storyList.size) storyGroup.lastStoryIndex = nextIndex
-                else if (nextIndex == storyGroup.storyList.size) storyGroup.isAllStoriesWatched = true
+                else if (nextIndex == storyGroup.storyList.size) {
+                    storyGroup.isAllStoriesWatched = true
+                    storyGroup.lastStoryIndex = 0
+                }
             }
         }
         binding.vpStoryDetail.unregisterOnPageChangeCallback(pagerChangeCallback)

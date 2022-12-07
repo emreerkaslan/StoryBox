@@ -30,7 +30,7 @@ class StoryGroupProgressView : LinearLayout {
 
     private var listener: StoryDetailListener? = null
     private var position: Int = 0
-    private var currentStoryIndex: Int = -1
+    var currentStoryIndex: Int = -1
     private var storyGroup: StoryGroup? = null
     var onPauseVideo: (() -> Unit)? = null
 
