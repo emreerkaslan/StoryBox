@@ -269,7 +269,7 @@ class StoryView : ConstraintLayout {
                 val deltaY = touchFinalPoint.y - touchInitialPoint.y
                 moveDirection =
                     if (abs(deltaY) * 0.5 < abs(deltaX)) {
-                        if (deltaX > 0) Direction.RIGHT else Direction.LEFT
+                        if (deltaX > -30) Direction.RIGHT else Direction.LEFT
                     } else {
                         if(deltaY > 0) Direction.DOWN else Direction.UP
                     }
@@ -294,17 +294,7 @@ class StoryView : ConstraintLayout {
                     }
                 } else {
                     Log.d("STORYBOX", "swipe horizontal")
-                    if (moveDirection == Direction.LEFT) {
-                        storyGroupProgressView.resetAll()
-                        listener?.onStoryPreviousClicked(storyGroup, adapterPosition)
-                        return true
-                    } else if (moveDirection == Direction.RIGHT) {
-                        storyGroupProgressView.resetAll()
-                        listener?.onStoryNextClicked(storyGroup, adapterPosition)
-                        return true
-                    } else {
-                        listener?.onResumeVideo(storyGroup, adapterPosition)
-                    }
+                    listener?.onResumeVideo(storyGroup, adapterPosition)
                 }
                 return true
             }
