@@ -1,4 +1,7 @@
 # StoryBox
+
+Stack: Kotlin, MVVM, Hilt, Figma, Glide, MediaPlayer
+
 Instagram Story Player Module Implementation
 
 
